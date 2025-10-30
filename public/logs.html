@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat Log Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #d3d3d3;
+      padding: 30px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 6px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 250px;
+    }
+
+    button {
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      background: #cbff05;
+      color: black;
+    }
+
+    .entry {
+      background:#cbff05;
+      color: black;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .timestamp {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .user, .bot {
+      margin: 4px 0;
+    }
+
+    .user b {
+      color: #333;
+    }
+
+    .bot b {
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <h1>XPS AI Chat Logs</h1>
+  <div id="controls">
+    <input type="text" id="search" placeholder="Search logs..." />
+    <button id="toggleOrder">Newest First</button>
+    <button id="exportCSV">Export to CSV</button>
+  </div>
+  <div id="log"></div>
+
+  <script>
+    let ascending = true;
+    let allEntries = [];
+
+    async function loadLogs() {
+      const res = await fetch('/chat-log.json');
+      const text = await res.text();
+      const lines = text.trim().split('\n').filter(Boolean);
+      allEntries = lines.map(line => JSON.parse(line));
+      renderLogs();
+    }
+
+    function renderLogs() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const entries = ascending ? allEntries : [...allEntries].reverse();
+      const filtered = entries.filter(e =>
+        e.user.toLowerCase().includes(query) || e.bot.toLowerCase().includes(query)
+      );
+
+      const container = document.getElementById('log');
+      container.innerHTML = '';
+
+      filtered.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'entry';
+        div.innerHTML = `
+          <div class="timestamp">${new Date(entry.timestamp).toLocaleString()}</div>
+          <div class="user"><b>You:</b> ${entry.user}</div>
+          <div class="bot"><b>XPS AI:</b> ${entry.bot}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    document.getElementById('search').addEventListener('input', renderLogs);
+
+    document.getElementById('toggleOrder').addEventListener('click', () => {
+      ascending = !ascending;
+      document.getElementById('toggleOrder').innerText = ascending ? 'Newest First' : 'Oldest First';
+      renderLogs();
+    });
+
+    document.getElementById('exportCSV').addEventListener('click', () => {
+      const csvRows = [['Timestamp', 'User Message', 'Bot Reply']];
+      allEntries.forEach(entry => {
+        csvRows.push([
+          new Date(entry.timestamp).toLocaleString(),
+          `"${entry.user.replace(/"/g, '""')}"`,
+          `"${entry.bot.replace(/"/g, '""')}"`
+        ]);
+      });
+
+      const csvContent = csvRows.map(row => row.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'chat-log.csv';
+      link.click();
+    });
+
+    loadLogs();
+  </script>
+</body>
+</html>

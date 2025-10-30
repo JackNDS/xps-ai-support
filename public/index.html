@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Support Chat</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <nav>
+  <div class="navbar">
+    <ul>
+      <li><a href="/logs.html" class="logsbtn">Support Logs</a></li>
+    </ul>
+  </div>
+</nav>
+  <!-- Toggle Button -->
+<div id="chat-toggle" style="
+  position: fixed;
+  bottom: 20px;
+  right: 30%;
+  width: 600px;
+  background-color: #cbff05;
+  color: black;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 1000;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+">
+  <div class="icon-container">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="#000" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M15.7196 3.83214L17.0691 4.2596C17.1738 4.29261 17.2451 4.38989 17.2451 4.49985C17.2451 4.60981 17.1738 4.7068 17.0691 4.74011L15.7196 5.16786C15.5737 5.21414 15.4594 5.32852 15.4131 5.47444L14.9854 6.82401C14.9523 6.92866 14.8551 7 14.7451 7C14.6352 7 14.5382 6.92866 14.5049 6.82401L14.0772 5.47444C14.0309 5.32852 13.9165 5.21414 13.7706 5.16786L12.4211 4.74011C12.3165 4.70709 12.2451 4.60952 12.2451 4.49985C12.2451 4.39019 12.3165 4.29291 12.4211 4.2596L13.7706 3.83214C13.9165 3.78586 14.0309 3.67148 14.0772 3.52556L14.5049 2.17599C14.5379 2.07134 14.6352 2 14.7451 2C14.8551 2 14.952 2.07134 14.9854 2.17599L15.4131 3.52556C15.4594 3.67148 15.5737 3.78586 15.7196 3.83214ZM11.4327 10.0881L14.8032 11.1557C15.0645 11.2381 15.2427 11.4811 15.2427 11.7557C15.2427 12.0304 15.0645 12.2726 14.8032 12.3558L11.4327 13.4241C11.0683 13.5397 10.7827 13.8254 10.6671 14.1898L9.5988 17.5605C9.51635 17.8218 9.27339 18 8.99878 18C8.72417 18 8.48196 17.8218 8.39877 17.5605L7.33051 14.1898C7.21492 13.8254 6.92926 13.5397 6.56483 13.4241L3.19441 12.3558C2.93305 12.2733 2.75488 12.0296 2.75488 11.7557C2.75488 11.4818 2.93305 11.2389 3.19441 11.1557L6.56483 10.0881C6.92926 9.97251 7.21492 9.68683 7.33051 9.32238L8.39877 5.95176C8.48122 5.69038 8.72417 5.51221 8.99878 5.51221C9.27339 5.51221 9.51561 5.69038 9.5988 5.95176L10.6671 9.32238C10.7827 9.68683 11.0683 9.97251 11.4327 10.0881Z"/>
+    </svg>
+  </div>
+  <div>Chat with Support</div>
+  <div id="logo-black"><img src="/logo-black.png" alt="" style="height:25px;"></div>
+</div>
+
+<!-- Chat Widget (separate element) -->
+<div id="chatbox" style="
+  position: fixed;
+  bottom: 80px;
+  right: 30%;
+  width: 600px;
+  background: #cbff05;
+  border-radius: 8px;
+  padding: 10px;
+  display: none;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-family: 'Inter', sans-serif;
+">
+  <div id="chatlog" style="max-height:450px; overflow-y:auto; margin-bottom:10px;"></div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <input id="chatinput" placeholder="Ask me anything..." style="flex:1; padding:8px; border: 0.5px solid #000; border-radius:4px; background-color: #cbff05; color: black;" />
+  </div>
+</div>
+
+
+    
+  </div>
+  
+
+  <!-- Chat Logic -->
+  <script>
+    // Toggle chat visibility
+    $('#chat-toggle').on('click', function () {
+      $('#chatbox').fadeToggle(150);
+    });
+
+    // Handle input
+    $('#chatinput').on('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+
+        const message = $(this).val();
+        if (!message.trim()) return;
+
+        $('#chatlog').append(`<div><b>You:</b> ${message}</div>`);
+        $(this).val('');
+
+        $.ajax({
+          url: 'http://localhost:3001/chat',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ message }),
+          success: function(data) {
+  const enhancedReply = data.reply.replace(
+    /(https?:\/\/.*\.(?:gif|png|jpg|jpeg))/gi,
+    '<br><img src="$1" style="max-width:100%; border-radius:6px; margin-top:8px;" />'
+  );
+
+  $('#chatlog').append(`<div><b>XPS AI:</b> ${enhancedReply}</div>`);
+
+  // ✅ Scroll to the bottom of chatlog
+  const chatlog = document.getElementById('chatlog');
+  chatlog.scrollTop = chatlog.scrollHeight;
+}
+,
+          error: function (err) {
+            $('#chatlog').append(`<div><b>XPS AI:</b> Error contacting server.</div>`);
+            console.error(err);
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

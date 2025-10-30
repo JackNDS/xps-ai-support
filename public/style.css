@@ -1,0 +1,64 @@
+* {
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  text-decoration: none;
+  padding: 0;
+}
+
+body {
+  background-color: #3f3f3fff; /* Optional: adds subtle contrast */
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#chatbox {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+#chatlog div {
+  margin: 5px 0;
+}
+
+#chatlog b {
+  color: #333;
+}
+
+#chatinput {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+#logo-black img {
+  position: relative;
+  height: 25px;
+  z-index: 1000;
+}
+
+.logsbtn {
+  background-color: #cbff05;
+  underline: none;
+  font-weight: 500;
+  padding: 10px 15px;
+  border-radius: 8px;
+}
+
+.navbar {
+  list-style: none;
+  padding: 40px;
+  margin: 0;
+}
+
+.navbar li {
+  list-style: none;
+}
+.navbar li a {
+  color: #000;
+  underline: none;
+  font-weight: 500;
+}
+.icon-container {
+  color: #000;
+}
